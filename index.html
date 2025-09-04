@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Extrator de Palavras-Chave</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .container {
+    max-width: 900px;
+    width: 100%;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  .header {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    padding: 30px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.2em;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+  .header p {
+    font-size: 1.1em;
+    opacity: 0.9;
+  }
+  .main-content {
+    padding: 30px;
+  }
+  .input-section {
+    margin-bottom: 25px;
+  }
+  .input-section label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #2d3748;
+    font-size: 1.1em;
+  }
+  .text-area {
+    width: 100%;
+    min-height: 180px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px;
+    font-size: 16px;
+    resize: vertical;
+    transition: border-color 0.3s ease;
+    font-family: inherit;
+    line-height: 1.5;
+  }
+  .text-area:focus {
+    outline: none;
+    border-color: #4facfe;
+    box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+  }
+  .button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    font-size: 1.1em;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    display: block;
+    margin: 0 auto;
+  }
+  .button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  }
+  .button:active {
+    transform: translateY(0);
+  }
+  .results-section {
+    background: #f7fafc;
+    border-radius: 12px;
+    padding: 25px;
+    margin-top: 25px;
+    display: none;
+  }
+  .results-section h2 {
+    color: #2d3748;
+    margin-bottom: 20px;
+    font-size: 1.3em;
+    text-align: center;
+  }
+  .keywords-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .keyword-card {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.2);
+    transition: transform 0.3s ease;
+  }
+  .keyword-card:hover {
+    transform: translateY(-3px);
+  }
+  .keyword-frequency {
+    font-size: 0.85em;
+    opacity: 0.8;
+    margin-top: 5px;
+  }
+  .empty-state {
+    text-align: center;
+    color: #a0aec0;
+    padding: 30px;
+    display: block;
+  }
+  .empty-state img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 15px;
+    opacity: 0.6;
+  }
+  .stats {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .stat-item {
+    text-align: center;
+    padding: 15px;
+    border-radius: 8px;
+    background: #f7fafc;
+  }
+  .stat-number {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 5px;
+  }
+  .stat-label {
+    color: #718096;
+    font-size: 0.85em;
+  }
+  .loading {
+    text-align: center;
+    padding: 20px;
+    color: #4facfe;
+    display: none;
+  }
+  .error {
+    background: #fed7d7;
+    color: #c53030;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 15px;
+    border-left: 4px solid #f56565;
+    display: none;
+  }
+  @media (max-width: 768px) {
+    .container {
+      margin: 10px;
+      border-radius: 15px;
+    }
+    .header h1 {
+      font-size: 1.8em;
+    }
+    .header {
+      padding: 20px;
+    }
+    .main-content {
+      padding: 20px;
+    }
+    .keywords-grid {
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    }
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+    .text-area {
+      min-height: 150px;
+      padding: 15px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔍 Extrator de Palavras-Chave</h1>
+      <p>Extraia as palavras mais relevantes do seu texto automaticamente</p>
+    </div>
+    <div class="main-content">
+      <div class="input-section">
+        <label for="text-input">Cole ou digite seu texto abaixo:</label>
+        <textarea id="text-input" class="text-area" placeholder="Digite ou cole o texto do qual deseja extrair as palavras-chave..."></textarea>
+      </div>
+      <button id="extract-btn" class="button">🚀 Extrair Palavras-Chave</button>
+      <div id="loading" class="loading">⏳ Analisando texto...</div>
+      <div id="error-message" class="error"></div>
+      <div id="results-section" class="results-section">
+        <h2>📊 Palavras-Chave Encontradas</h2>
+        <div class="stats">
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-number" id="total-words">0</div>
+              <div class="stat-label">Palavras no texto</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number" id="unique-words">0</div>
+              <div class="stat-label">Palavras únicas</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number" id="keywords-found">0</div>
+              <div class="stat-label">Palavras-chave</div>
+            </div>
+          </div>
+        </div>
+        <div id="keywords-container" class="keywords-grid"></div>
+      </div>
+      <div id="empty-state" class="empty-state">
+        <img src="https://placehold.co/80x80/4facfe/ffffff?text=🔍" alt="Ícone de lupa indicando análise de texto" />
+        <h3>Digite algum texto para começar</h3>
+        <p>O extrator irá analisar e mostrar as palavras mais relevantes</p>
+      </div>
+    </div>
+  </div>
+  <script>
+    const extractBtn = document.getElementById('extract-btn');
+    const textInput = document.getElementById('text-input');
+    const resultsSection = document.getElementById('results-section');
+    const emptyState = document.getElementById('empty-state');
+    const keywordsContainer = document.getElementById('keywords-container');
+    const totalWordsEl = document.getElementById('total-words');
+    const uniqueWordsEl = document.getElementById('unique-words');
+    const keywordsFoundEl = document.getElementById('keywords-found');
+    const loadingEl = document.getElementById('loading');
+    const errorEl = document.getElementById('error-message');
+
+    const stopwords = new Set([
+      'de', 'a', 'o', 'que', 'e', 'do', 'da', 'em', 'um', 'para', 'é', 'com', 'não',
+      'uma', 'os', 'no', 'se', 'na', 'por', 'mais', 'as', 'dos', 'como', 'mas', 'foi',
+      'ao', 'ele', 'das', 'tem', 'à', 'seu', 'sua', 'ou', 'ser', 'quando', 'muito',
+      'há', 'nos', 'já', 'está', 'eu', 'também', 'só', 'pelo', 'pela', 'até', 'isso',
+      'ela', 'entre', 'era', 'depois', 'sem', 'mesmo', 'aos', 'ter', 'seus', 'quem',
+      'nas', 'me', 'esse', 'eles', 'estão', 'você', 'tinha', 'foram', 'essa', 'num',
+      'nem', 'suas', 'meu', 'às', 'minha', 'têm', 'numa', 'pelos', 'elas', 'havia',
+      'seja', 'qual', 'será', 'nós', 'tenho', 'lhe', 'deles', 'essas', 'esses', 'pelas',
+      'este', 'fosse', 'dele', 'tu', 'te', 'vocês', 'vos', 'lhes', 'meus', 'minhas',
+      'teu', 'tua', 'teus', 'tuas', 'nosso', 'nossa', 'nossos', 'nossas', 'dela',
+      'delas', 'esta', 'estes', 'estas', 'aquele', 'aquela', 'aqueles', 'aquelas',
+      'isto', 'aquilo', 'estou', 'está', 'estamos', 'estão', 'estive', 'esteve',
+      'estivemos', 'estiveram', 'estava', 'estávamos', 'estavam', 'estivera',
+      'estivéramos', 'esteja', 'estejamos', 'estejam', 'estivesse', 'estivéssemos',
+      'estivessem', 'estiver', 'estivermos', 'estiverem', 'hei', 'há', 'havemos',
+      'hão', 'houve', 'houvemos', 'houveram', 'houvera', 'houvéramos', 'haja',
+      'hajamos', 'hajam', 'houvesse', 'houvéssemos', 'houvessem', 'houver', 'houvermos',
+      'houverem', 'houverei', 'houverá', 'houveremos', 'houverão', 'sou', 'somos',
+      'são', 'era', 'éramos', 'eram', 'fui', 'foi', 'fomos', 'foram', 'fora',
+      'fôramos', 'seja', 'sejamos', 'sejam', 'fosse', 'fôssemos', 'fossem', 'for',
+      'formos', 'forem', 'serei', 'será', 'seremos', 'serão'
+    ]);
+
+    function extractKeywords(text) {
+      const normalized = text.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()"\[\]?]/g, '');
+      const words = normalized.split(/\s+/).filter(word => word.length > 0);
+
+      const freqMap = new Map();
+      for (const word of words) {
+        if (word.length <= 2) continue;
+        if (stopwords.has(word)) continue;
+        freqMap.set(word, (freqMap.get(word) || 0) + 1);
+      }
+
+      const sorted = Array.from(freqMap.entries()).sort((a, b) => b[1] - a[1]);
+
+      return {
+        keywords: sorted.slice(0, 8),
+        totalWords: words.length,
+        uniqueWords: new Set(words).size
+      };
+    }
+
+    function renderKeywords(keywords) {
+      keywordsContainer.innerHTML = '';
+      if (keywords.length === 0) {
+        keywordsContainer.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: #718096;">
+          <p>Nenhuma palavra-chave encontrada. Tente um texto mais longo.</p>
+        </div>`;
+        return;
+      }
+      for (const [word, freq] of keywords) {
+        const card = document.createElement('div');
+        card.className = 'keyword-card';
+        card.innerHTML = `<div class="keyword-text">${word}</div>
+          <div class="keyword-frequency">Aparece ${freq} vez${freq > 1 ? 'es' : ''}</div>`;
+        keywordsContainer.appendChild(card);
+      }
+    }
+
+    function showError(message) {
+      errorEl.textContent = message;
+      errorEl.style.display = 'block';
+      setTimeout(() => {
+        errorEl.style.display = 'none';
+      }, 4000);
+    }
+
+    extractBtn.addEventListener('click', () => {
+      const text = textInput.value.trim();
+      errorEl.style.display = 'none';
+
+      if (!text) {
+        showError('Por favor, digite ou cole algum texto para extrair as palavras-chave.');
+        return;
+      }
+      if (text.length < 10) {
+        showError('O texto é muito curto. Digite pelo menos 10 caracteres.');
+        return;
+      }
+
+      loadingEl.style.display = 'block';
+      emptyState.style.display = 'none';
+      resultsSection.style.display = 'none';
+
+      setTimeout(() => {
+        try {
+          const { keywords, totalWords, uniqueWords } = extractKeywords(text);
+          totalWordsEl.textContent = totalWords.toLocaleString('pt-BR');
+          uniqueWordsEl.textContent = uniqueWords.toLocaleString('pt-BR');
+          keywordsFoundEl.textContent = keywords.length;
+          renderKeywords(keywords);
+          resultsSection.style.display = 'block';
+          emptyState.style.display = 'none';
+        } catch {
+          showError('Erro ao processar o texto. Tente novamente.');
+        } finally {
+          loadingEl.style.display = 'none';
+        }
+      }, 300);
+    });
+
+    textInput.addEventListener('input', () => {
+      if (textInput.value.trim().length === 0) {
+        resultsSection.style.display = 'none';
+        emptyState.style.display = 'block';
+      }
+    });
+
+    emptyState.style.display = 'block';
+  </script>
+</body>
+</html>
